@@ -25,42 +25,36 @@ Technical Implementation
 
 1.  **Key Structure (`RsaRingSigner` struct)**
 
-rust
 
-Copy
 
-`pub struct RsaRingSigner {
+```
+pub struct RsaRingSigner {
     pub list: Vec<RsaPublicKey>,  // List of all public keys in the ring
     pub signer: RsaPrivateKey     // Private key of the actual signer
-}`
+}
+```
 
 1.  **Symmetric Encryption (AES-128)** Located in `sym.rs`, handles the encryption/decryption operations using AES-128 in ECB mode:
 
-rust
-
-Copy
-
-`pub fn encrypt(key: BigUint, plaintext: BigUint) -> BigUint
+```
+pub fn encrypt(key: BigUint, plaintext: BigUint) -> BigUint
 pub fn decrypt(key: BigUint, ciphertext: BigUint) -> BigUint`
-
+```
 ### Key Algorithms
 
 1\. Trapdoor Function
 ---------------------
 
-rust
-
-Copy
-
-`fn compute_trapdoor(input: BigUint, public_key: RsaPublicKey) -> BigUint {
+```
+fn compute_trapdoor(input: BigUint, public_key: RsaPublicKey) -> BigUint {
     let modulus = public_key.n();
     let exponent = public_key.e();
     let quotient = &input / modulus;
     let remainder = &input % modulus;
     let transformed_remainder = remainder.modpow(exponent, modulus);
     quotient * modulus + transformed_remainder
-}`
-
+}
+```
 This function implements the RSA trapdoor permutation, which is key to the ring signature's security. It:
 
 -   Takes an input value and a public key
@@ -75,20 +69,14 @@ The signing algorithm in `sign()` function works in these steps:
 
 a. **Initialization**:
 
-rust
-
-Copy
-
-`let key = hash(message);           // Generate symmetric key
+```
+let key = hash(message);           // Generate symmetric key
 let glue = rand256_bytes();        // Generate random glue value`
-
+```
 b. **Ring Member Processing**:
 
-rust
-
-Copy
-
-`for i in self.list.iter() {
+```
+for i in self.list.iter() {
     if *i != RsaPublicKey::from(self.signer.clone()) {
         // For non-signers: generate random values
         let x = rand256_bytes();
@@ -102,15 +90,12 @@ Copy
         s = j;
     }
     j += 1;
-}`
-
+}
+```
 c. **Ring Construction**:
 
-rust
-
-Copy
-
-`// Forward ring construction
+```
+// Forward ring construction
 let mut e = glue.clone();
 for k in 0..s {
     let c = e.clone() ^ yi_arr[k as usize].clone();
@@ -122,16 +107,13 @@ let mut v = glue.clone();
 for k in ((s + 1)..j).rev() {
     let d = sym::decrypt(key.clone(), v);
     v = d ^ yi_arr[k as usize].clone();
-}`
-
+}
+```
 3\. Verification Process
 ------------------------
 
-rust
-
-Copy
-
-`pub fn verify(
+```
+pub fn verify(
     list: Vec<RsaPublicKey>,
     xi_arr: Vec<BigUint>,
     glue: BigUint,
@@ -154,8 +136,8 @@ Copy
 
     // Verify if the chain closes
     e == glue
-}`
-
+}
+```
 Security Features
 -----------------
 
@@ -168,24 +150,18 @@ Usage
 
 ### Prerequisites
 
-toml
-
-Copy
-
-`[dependencies]
+```
+[dependencies]
 aes = "0.7"
 rand = "0.8"
 rsa = "0.5"
 sha2 = "0.9"
-sp-core = "6.0"`
-
+sp-core = "6.0"
+```
 ### Basic Usage Example
 
-rust
-
-Copy
-
-`// Generate keys for ring members
+```
+// Generate keys for ring members
 let private_keys = generate_keys(2048, 5);
 let mut public_keys: Vec<RsaPublicKey> = Vec::new();
 for private_key in private_keys.iter() {
@@ -207,7 +183,8 @@ let is_valid = verify(
     glue.clone(),
     message.clone(),
 );
-println!("Signature valid: {}", is_valid);`
+println!("Signature valid: {}", is_valid);
+```
 
 Recommended Security Practices
 ------------------------------
