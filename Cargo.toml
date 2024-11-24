@@ -1,0 +1,12 @@
+[package]
+name = "Ring_Signature_Implementation"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rsa = "0.5.0"
+rand = "0.8.4"
+aes = "0.7.5"
+sp-core = "3.0.0"
+byteorder = "1.2.7"
+sha2 = "0.9.8"
